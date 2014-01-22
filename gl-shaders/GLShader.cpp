@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "GLShader.hpp"
 
-namespace CPM_GL_SHADER_NS {
+namespace CPM_GL_SHADERS_NS {
 
 GLuint loadShaderProgram(const std::list<ShaderSource>& shaders)
 {

@@ -9,7 +9,9 @@ fi
 set -e
 
 pushd ./bin > /dev/null
-  cmake -DUSE_OS_MESA=ON ..
+  if [[ ! "-n" == $1 ]]; then
+    cmake -DUSE_OS_MESA=ON ..
+  fi
   make -j4
   ./gl_shader_tests
 popd

@@ -47,7 +47,7 @@ endif()
 include(${CPM_DIR}/CPM.cmake)
 
 # ++ MODULE: GL Shader
-CPM_AddModule("gl_shader"
+CPM_AddModule("gl_shaders"
   SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 # ++ EXTERNAL-MODULE: Google Test

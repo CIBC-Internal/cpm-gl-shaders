@@ -30,7 +30,16 @@ TEST_F(ContextTestFixture, TestBasicRendering)
     0, 1, 2, 3
   };
 
-  //std::string shaderFile = ;
+  std::string vertexShader   = CPM_FILE_UTIL_NS::readFile("shaders/Color.vsh");
+  std::string fragmentShader = CPM_FILE_UTIL_NS::readFile("shaders/Color.fsh");
+
+  // Compile and link vertex and fragment shader into a program.
+  CPM_GL_SHADERS_NS::loadShaderProgram(
+      {
+        CPM_GL_SHADERS_NS::ShaderSource({vertexShader.c_str()}, GL_VERTEX_SHADER),
+        CPM_GL_SHADERS_NS::ShaderSource({fragmentShader.c_str()}, GL_FRAGMENT_SHADER),
+      });
+  
 
 }
 

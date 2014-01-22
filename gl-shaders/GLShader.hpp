@@ -19,7 +19,7 @@
 #define CPM_GLSHADER_MAX_UNIFORM_NAME 24
 #endif
 
-namespace CPM_GL_SHADER_NS {
+namespace CPM_GL_SHADERS_NS {
 
 struct ShaderSource
 {
