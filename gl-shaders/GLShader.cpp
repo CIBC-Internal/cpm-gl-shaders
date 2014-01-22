@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <cstring>
+#include <algorithm>
 #include "GLShader.hpp"
 
 namespace CPM_GL_SHADER_NS {
@@ -168,6 +169,8 @@ std::vector<ShaderUniform> getProgramUniforms(GLuint program)
 
     uniforms.push_back(ShaderUniform(uniformName, uniformSize, type, loc));
   }
+
+  return uniforms;
 }
 
 
