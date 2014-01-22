@@ -2,6 +2,7 @@
 /// \date   January 2014
 
 #include <stdexcept>
+#include <cstring>
 #include "GLShader.hpp"
 
 namespace CPM_GL_SHADER_NS {
@@ -50,7 +51,8 @@ GLuint loadShaderProgram(const std::list<ShaderSource>& shaders)
     compiledShaders.push_back(shader);
 
     // Set the source and compile.
-    GL(glShaderSource(shader, it->mSources.size(), &it->mSources[0], NULL));
+    const char* contents = it->mSources[0];
+    GL(glShaderSource(shader, it->mSources.size(), &contents, NULL));
     GL(glCompileShader(shader));
 
     // Check the compile status.
