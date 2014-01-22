@@ -11,6 +11,6 @@ set -e
 pushd ./bin > /dev/null
   cmake -DUSE_OS_MESA=ON ..
   make -j4
-  ./arc_ball_test
+  ./gl_shader_tests
 popd
 

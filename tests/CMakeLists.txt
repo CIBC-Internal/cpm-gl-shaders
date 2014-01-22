@@ -4,7 +4,7 @@ else()
   cmake_minimum_required(VERSION 2.8.7 FATAL_ERROR)
 endif()
 
-project(ArcBallTest)
+project(GLShaderTests)
 
 #-----------------------------------------------------------------------
 # C++11
@@ -46,8 +46,8 @@ if (NOT EXISTS ${CPM_DIR}/CPM.cmake)
 endif()
 include(${CPM_DIR}/CPM.cmake)
 
-# ++ MODULE: Arc Ball
-CPM_AddModule("arc_ball"
+# ++ MODULE: GL Shader
+CPM_AddModule("gl_shader"
   SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 # ++ EXTERNAL-MODULE: Google Test
@@ -59,7 +59,12 @@ CPM_AddModule("google_test"
 # ++ MODULE: batch_testing
 CPM_AddModule("batch_testing"
   GIT_REPOSITORY "https://github.com/iauns/cpm-gl-batch-testing"
-  GIT_TAG "1.1.2")
+  GIT_TAG "1.1.4")
+
+# ++ MODULE: file utils
+CPM_AddModule("file_util"
+  GIT_REPOSITORY "https://github.com/iauns/cpm-file-util"
+  GIT_TAG 1.0.0)
 
 CPM_Finish()
 
@@ -71,14 +76,6 @@ CPM_GetSourceDir(SPIRE_TESTING_SOURCE_DIR "batch_testing")
 # Copy shaders.
 file(COPY ${SPIRE_TESTING_SOURCE_DIR}/shaders/
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/shaders
-     FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-     DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                           GROUP_READ
-                           WORLD_READ WORLD_EXECUTE)
-
-# Exported meshes.
-file(COPY ${SPIRE_TESTING_SOURCE_DIR}/assets/
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/assets
      FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
      DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                            GROUP_READ
@@ -98,23 +95,6 @@ if(APPLE)
 endif()
 
 #-----------------------------------------------------------------------
-# Regression directory setup
-#-----------------------------------------------------------------------
-
-set(REGRESSION_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/regression")
-CPM_EnsureRepoIsCurrent(
-  TARGET_DIR ${REGRESSION_DATA_DIR}
-  GIT_REPOSITORY "https://github.com/iauns-tests/cpm-arc-ball"
-  GIT_TAG "origin/master"
-  )
-
-add_definitions(-DTEST_OUTPUT_IMAGES)
-add_definitions(-DTEST_IMAGE_OUTPUT_DIR="${REGRESSION_DATA_DIR}/output")
-add_definitions(-DTEST_IMAGE_COMPARE_DIR="${REGRESSION_DATA_DIR}/verified")
-add_definitions(-DTEST_PERCEPTUAL_COMPARE)
-add_definitions(-DTEST_PERCEPTUAL_COMPARE_BINARY="perceptualdiff")
-
-#-----------------------------------------------------------------------
 # Setup source
 #-----------------------------------------------------------------------
 # Setup spire test sources. Even though this is a batch renderer, this is
@@ -125,8 +105,9 @@ file(GLOB Sources
   "*.hpp"
   )
 
-########################################################################
+#-----------------------------------------------------------------------
 # Setup executable
+#-----------------------------------------------------------------------
 
 # For google test...
 if (UNIX)
@@ -140,8 +121,8 @@ if (USE_OS_MESA)
   set(OPENGL_LIBRARIES)
 endif()
 
-add_executable(arc_ball_test ${Sources})
-target_link_libraries(arc_ball_test 
+add_executable(gl_shader_tests ${Sources})
+target_link_libraries(gl_shader_tests 
   ${CPM_LIBRARIES}
   ${OPENGL_LIBRARIES}
   ${PTHREADS})
