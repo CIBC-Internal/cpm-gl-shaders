@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>   // glm::translate, glm::rotate, glm::perspective
 #include <glm/gtc/type_ptr.hpp>           // glm::value_ptr
+#include <gl-state/GLState.hpp>
 
 using namespace CPM_BATCH_TESTING_NS;
 namespace gls = CPM_GL_SHADERS_NS;
@@ -76,18 +77,18 @@ TEST_F(ContextTestFixture, TestBasicRendering)
 
   // Construct VBO.
   GLuint vbo;
+  GLsizei vboSizeBytes = static_cast<GLsizei>(vboData.size() * sizeof(float));
   GL(glGenBuffers(1, &vbo));
   GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-  GL(glBufferData(GL_ARRAY_BUFFER, 
-                  static_cast<GLsizeiptr>(vboData.size() * sizeof(float)),
+  GL(glBufferData(GL_ARRAY_BUFFER, vboSizeBytes,
                   reinterpret_cast<GLvoid*>(&vboData[0]), GL_STATIC_DRAW));
 
   // Construct IBO
   GLuint ibo;
+  GLsizei iboSizeBytes = static_cast<GLsizei>(iboData.size() * sizeof(uint16_t));
   GL(glGenBuffers(1, &ibo));
   GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-  GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                  static_cast<GLsizeiptr>(iboData.size() * sizeof(uint16_t)),
+  GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, iboSizeBytes,
                   reinterpret_cast<GLvoid*>(&iboData[0]), GL_STATIC_DRAW));
 
   //-----------------
@@ -98,6 +99,10 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   // cpm-gl-batch-testing.
   beginFrame();
 
+  // Apply a known GL state.
+  CPM_GL_STATE_NS::GLState defaultGLState;
+  defaultGLState.apply();
+
   // Bind shader
   GL(glUseProgram(program));
 
@@ -105,19 +110,20 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
   GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
 
-  // Build projection matrix looking down negative Z.
-  float aspect = static_cast<float>(640) / static_cast<float>(480);
-  glm::mat4 projection = glm::perspective(0.59f, aspect, 1.0f, 2000.0f);
-
-  // Assign projection to appropriate uniform (the only uniform currently).
-  GL(glUniformMatrix4fv(static_cast<GLint>(uniforms[0].uniformLoc), 1, false,
-                        static_cast<const GLfloat*>(glm::value_ptr(projection))));
-
   // Properly assign attributes. We have already sorted the uniforms in
   // alphabetical order, and we have ensured that the VBO was built in
   // alphabetical order. So all we have to do is bind the attributes according
   // to the sorted attribute vector.
   gls::bindAllAttributes(&attribs[0], attribs.size());
+
+  // Build projection matrix looking down negative Z.
+  float aspect = static_cast<float>(640) / static_cast<float>(480);
+  glm::mat4 projection = glm::perspective(0.59f, aspect, 1.0f, 2000.0f);
+
+  // Assign projection to appropriate uniform (the only uniform currently).
+  GLfloat* matrixPtr = glm::value_ptr(projection);
+  GL(glUniformMatrix4fv(static_cast<GLint>(uniforms[0].uniformLoc), 1, false,
+                        matrixPtr));
 
   GL(glDrawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(iboData.size()),
                     GL_UNSIGNED_SHORT, 0));

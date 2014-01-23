@@ -9,8 +9,13 @@
 
 namespace CPM_GL_SHADERS_NS {
 
-size_t getSizeOfGLType(GLenum type);
 GLsizei calculateStride(ShaderAttribute* array, size_t size);
+
+/// Retrieves the number of components associated with a particular GL type.
+size_t getSizeOfGLType(GLenum type);
+size_t getNumComponentsOfGLType(GLenum type);
+GLenum getBaseTypeOfGLType(GLenum type);
+size_t getSizeOfBaseGLType(GLenum type);
 
 GLuint loadShaderProgram(const std::list<ShaderSource>& shaders)
 {
@@ -164,7 +169,7 @@ void bindAllAttributes(ShaderAttribute* array, size_t size)
   {
     GL(glEnableVertexAttribArray(static_cast<GLuint>(array[i].attribLoc)));
     GL(glVertexAttribPointer(static_cast<GLuint>(array[i].attribLoc),
-                             array[i].size, array[i].type, array[i].normalize,
+                             array[i].numComps, array[i].baseType, array[i].normalize,
                              stride, reinterpret_cast<const void*>(offset)));
     offset += array[i].sizeBytes;
   }
@@ -197,8 +202,9 @@ void bindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
     {
       GL(glEnableVertexAttribArray(static_cast<GLuint>(subset[attribIndex].attribLoc)));
       GL(glVertexAttribPointer(static_cast<GLuint>(subset[attribIndex].attribLoc),
-                               superset[i].size, superset[i].type, superset[i].normalize,
-                               stride, reinterpret_cast<const void*>(offset)));
+                               subset[attribIndex].numComps, subset[attribIndex].baseType,
+                               superset[i].normalize, stride, 
+                               reinterpret_cast<const void*>(offset)));
     }
     offset += superset[i].sizeBytes;
   }
@@ -239,8 +245,8 @@ std::tuple<size_t, size_t> buildPreappliedAttrib(
       }
 
       out[appliedSize].attribLoc = subset[attribIndex].attribLoc;
-      out[appliedSize].size      = superset[i].size;
-      out[appliedSize].type      = superset[i].type;
+      out[appliedSize].baseType  = subset[attribIndex].baseType;
+      out[appliedSize].numComps  = subset[attribIndex].numComps;
       out[appliedSize].normalize = superset[i].normalize;
       out[appliedSize].offset    = offset;
 
@@ -260,7 +266,7 @@ void bindPreappliedAttrib(ShaderAttributeApplied* array, size_t size, size_t str
   {
     GL(glEnableVertexAttribArray(static_cast<GLuint>(array[i].attribLoc)));
     GL(glVertexAttribPointer(static_cast<GLuint>(array[i].attribLoc),
-                             array[i].size, array[i].type, array[i].normalize,
+                             array[i].numComps, array[i].baseType, array[i].normalize,
                              stride, reinterpret_cast<const void*>(array[i].offset)));
   }
 }
@@ -343,6 +349,8 @@ ShaderAttribute::ShaderAttribute(const std::string& name, GLint s, GLenum t,
   }
 
   sizeBytes = getSizeOfGLType(t) * s;
+  baseType = getBaseTypeOfGLType(t);
+  numComps = getNumComponentsOfGLType(t) * s;
 }
 
 ShaderUniform::ShaderUniform(const std::string& name, GLint s, GLenum t, GLint loc) :
@@ -364,54 +372,149 @@ ShaderUniform::ShaderUniform(const std::string& name, GLint s, GLenum t, GLint l
 
 size_t getSizeOfGLType(GLenum type)
 {
-  // Calculate the size of this attribute.
-  const size_t fsize = sizeof(GLfloat);
-  const size_t dsize = sizeof(GLdouble);
-  const size_t isize = sizeof(GLint);
-  const size_t uisize = sizeof(GLuint);
+  size_t numComponents = getNumComponentsOfGLType(type);
+  GLenum baseType      = getBaseTypeOfGLType(type);
+  size_t baseTypeSize  = getSizeOfBaseGLType(type);
+  return numComponents * baseTypeSize;
+}
+
+size_t getNumComponentsOfGLType(GLenum type)
+{
   switch (type)
   {
-    case GL_FLOAT: return fsize;
-    case GL_FLOAT_VEC2: return fsize * 2;
-    case GL_FLOAT_VEC3: return fsize * 3;
-    case GL_FLOAT_VEC4: return fsize * 4;
-    case GL_FLOAT_MAT2: return fsize * 2 * 2;
-    case GL_FLOAT_MAT3: return fsize * 3 * 3;
-    case GL_FLOAT_MAT4: return fsize * 4 * 4;
-    //case GL_FLOAT_MAT2X3: return fsize * 2 * 3;
-    //case GL_FLOAT_MAT2X4: return fsize * 2 * 4;
-    //case GL_FLOAT_MAT3X2: return fsize * 3 * 2;
-    //case GL_FLOAT_MAT3X4: return fsize * 3 * 4;
-    //case GL_FLOAT_MAT4X2: return fsize * 4 * 2;
-    //case GL_FLOAT_MAT4X3: return fsize * 4 * 3;
-    //case GL_INT: return isize;
-    //case GL_INT_VEC2: return isize * 2;
-    //case GL_INT_VEC3: return isize * 3;
-    //case GL_INT_VEC4: return isize * 4;
-    //case GL_UNSIGNED_INT: return uisize;
-    //case GL_UNSIGNED_INT_VEC2: return uisize * 2;
-    //case GL_UNSIGNED_INT_VEC3: return uisize * 3;
-    //case GL_UNSIGNED_INT_VEC4: return uisize * 4;
-    //case GL_DOUBLE: return dsize;
-    //case GL_DOUBLE_VEC2: return dsize * 2;
-    //case GL_DOUBLE_VEC3: return dsize * 3;
-    //case GL_DOUBLE_VEC4: return dsize * 4;
-    //case GL_DOUBLE_MAT2: return dsize * 2 * 2;
-    //case GL_DOUBLE_MAT3: return dsize * 3 * 3;
-    //case GL_DOUBLE_MAT4: return dsize * 4 * 4;
-    //case GL_DOUBLE_MAT2X3: return dsize * 2 * 3;
-    //case GL_DOUBLE_MAT2X4: return dsize * 2 * 4;
-    //case GL_DOUBLE_MAT3X2: return dsize * 3 * 2;
-    //case GL_DOUBLE_MAT3X4: return dsize * 3 * 4;
-    //case GL_DOUBLE_MAT4X2: return dsize * 4 * 2;
-    //case GL_DOUBLE_MAT4x3: return dsize * 4 * 3;
+    case GL_FLOAT: return 1;
+    case GL_FLOAT_VEC2: return 2;
+    case GL_FLOAT_VEC3: return 3;
+    case GL_FLOAT_VEC4: return 4;
+    case GL_FLOAT_MAT2: return 2 * 2;
+    case GL_FLOAT_MAT3: return 3 * 3;
+    case GL_FLOAT_MAT4: return 4 * 4;
+
+#ifdef GL_FLOAT_MAT2X3
+    case GL_FLOAT_MAT2X3: return 2 * 3;
+    case GL_FLOAT_MAT2X4: return 2 * 4;
+    case GL_FLOAT_MAT3X2: return 3 * 2;
+    case GL_FLOAT_MAT3X4: return 3 * 4;
+    case GL_FLOAT_MAT4X2: return 4 * 2;
+    case GL_FLOAT_MAT4X3: return 4 * 3;
+#endif
+
+    case GL_INT: return 1;
+#ifdef GL_INT_VEC2
+    case GL_INT_VEC2: return 2;
+    case GL_INT_VEC3: return 3;
+    case GL_INT_VEC4: return 4;
+#endif
+    case GL_UNSIGNED_INT: return 1;
+
+#ifdef GL_UNSIGNED_INT_VEC2
+    case GL_UNSIGNED_INT_VEC2: return 2;
+    case GL_UNSIGNED_INT_VEC3: return 3;
+    case GL_UNSIGNED_INT_VEC4: return 4;
+#endif
+
+    case GL_DOUBLE: return 1;
+#ifdef GL_DOUBLE_VEC2
+    case GL_DOUBLE_VEC2: return 2;
+    case GL_DOUBLE_VEC3: return 3;
+    case GL_DOUBLE_VEC4: return 4;
+    case GL_DOUBLE_MAT2: return 2 * 2;
+    case GL_DOUBLE_MAT3: return 3 * 3;
+    case GL_DOUBLE_MAT4: return 4 * 4;
+    case GL_DOUBLE_MAT2X3: return 2 * 3;
+    case GL_DOUBLE_MAT2X4: return 2 * 4;
+    case GL_DOUBLE_MAT3X2: return 3 * 2;
+    case GL_DOUBLE_MAT3X4: return 3 * 4;
+    case GL_DOUBLE_MAT4X2: return 4 * 2;
+    case GL_DOUBLE_MAT4x3: return 4 * 3;
+#endif
 
     default:
-      std::cerr << "cpm-gl-shaders: Unrecognized GL type" << std::endl;
-      return 0;
+      // Most of the other cases not covered are going to be one element long.
+      return 1;
   }
+}
 
-  return 0;
+GLenum getBaseTypeOfGLType(GLenum type)
+{
+  switch (type)
+  {
+    case GL_FLOAT:
+    case GL_FLOAT_VEC2:
+    case GL_FLOAT_VEC3:
+    case GL_FLOAT_VEC4:
+    case GL_FLOAT_MAT2:
+    case GL_FLOAT_MAT3:
+    case GL_FLOAT_MAT4:
+#ifdef GL_FLOAT_MAT2X3
+    case GL_FLOAT_MAT2X3:
+    case GL_FLOAT_MAT2X4:
+    case GL_FLOAT_MAT3X2:
+    case GL_FLOAT_MAT3X4:
+    case GL_FLOAT_MAT4X2:
+    case GL_FLOAT_MAT4X3:
+#endif
+      return GL_FLOAT;
+
+    case GL_BYTE:           return GL_BYTE;
+    case GL_UNSIGNED_BYTE:  return GL_UNSIGNED_BYTE;
+    case GL_SHORT:          return GL_SHORT;
+    case GL_UNSIGNED_SHORT: return GL_UNSIGNED_SHORT;
+
+    case GL_INT:
+#ifdef GL_INT_VEC2
+    case GL_INT_VEC2:
+    case GL_INT_VEC3:
+    case GL_INT_VEC4:
+#endif
+      return GL_INT;
+
+    case GL_UNSIGNED_INT:
+#ifdef GL_UNSIGNED_INT_VEC2
+    case GL_UNSIGNED_INT_VEC2:
+    case GL_UNSIGNED_INT_VEC3:
+    case GL_UNSIGNED_INT_VEC4:
+#endif
+      return GL_UNSIGNED_INT;
+
+    case GL_DOUBLE:
+#ifdef GL_DOUBLE_VEC2
+    case GL_DOUBLE_VEC2:
+    case GL_DOUBLE_VEC3:
+    case GL_DOUBLE_VEC4:
+    case GL_DOUBLE_MAT2:
+    case GL_DOUBLE_MAT3:
+    case GL_DOUBLE_MAT4:
+    case GL_DOUBLE_MAT2X3:
+    case GL_DOUBLE_MAT2X4:
+    case GL_DOUBLE_MAT3X2:
+    case GL_DOUBLE_MAT3X4:
+    case GL_DOUBLE_MAT4X2:
+    case GL_DOUBLE_MAT4x3:
+      return GL_DOUBLE;
+#endif
+
+    default:
+      // Always default to a GL_FLOAT
+      std::cerr << "Warning - getBaseTypeOfGLType: unrecognized GL type" << std::endl;
+      return GL_FLOAT;
+  }
+}
+
+size_t getSizeOfBaseGLType(GLenum type)
+{
+  switch (type)
+  {
+    case GL_FLOAT:          return sizeof(GLfloat);
+    case GL_BYTE:           return 1;
+    case GL_UNSIGNED_BYTE:  return 1;
+    case GL_SHORT:          return 2;
+    case GL_UNSIGNED_SHORT: return 2;
+    case GL_DOUBLE:         return sizeof(GLdouble);
+    case GL_INT:            return sizeof(GLint);
+    case GL_UNSIGNED_INT:   return sizeof(GLuint);
+    default:                return sizeof(GLfloat);
+  }
 }
 
 } // namespace CPM_GL_SHADER_NS

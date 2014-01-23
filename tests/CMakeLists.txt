@@ -73,6 +73,11 @@ CPM_AddModule("GLM"
   USE_EXISTING_VER TRUE
   )
 
+# ++ MODULE: GL State
+CPM_AddModule("gl_state"
+  GIT_REPOSITORY "https://github.com/iauns/cpm-gl-state.git"
+  GIT_TAG "1.0.1")
+
 CPM_Finish()
 
 #-----------------------------------------------------------------------

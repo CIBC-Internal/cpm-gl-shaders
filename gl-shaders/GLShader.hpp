@@ -64,6 +64,11 @@ struct ShaderAttribute
                         ///< OpenGL, it is only useful in the context of
                         ///< sending attributes to OpenGL. With this, we have
                         ///< all we need to call glVertexAttribPointer.
+
+  // The following variables are calculated for you in the constructor.
+  GLenum    baseType;   ///< Base GL type.
+  int       numComps;   ///< Number of components in the GL base type.
+
   char      nameInCode[MaxNameLength];  ///< Name of the attribute in-code.
 };
 
@@ -103,11 +108,11 @@ void unbindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
 /// Minimal structure based on the intersection between shader and VBO.
 struct ShaderAttributeApplied
 {
-  GLint       attribLoc;      ///< Attribute location from the shader.
-  GLint       size;           ///< Size in units of \p type.
-  GLenum      type;           ///< OpenGL type of array.
-  GLboolean   normalize;      ///< Taken from the VBO's attribute list.
-  uint32_t    offset;         ///< Calculated offset into VBO's memory.
+  GLint       attribLoc;    ///< Attribute location from the shader.
+  GLenum      baseType;     ///< Base OpenGL type of the attribute.
+  GLint       numComps;     ///< Number of components of type \p baseType.
+  GLboolean   normalize;    ///< Taken from the VBO's attribute list.
+  uint32_t    offset;       ///< Calculated offset into VBO's memory.
 };
 
 /// Builds a sequence of applied attributes. Use this to set set up a VBO for 
