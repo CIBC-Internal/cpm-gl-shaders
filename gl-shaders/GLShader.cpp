@@ -421,6 +421,9 @@ size_t getNumComponentsOfGLType(GLenum type)
     case GL_DOUBLE_MAT2: return 2 * 2;
     case GL_DOUBLE_MAT3: return 3 * 3;
     case GL_DOUBLE_MAT4: return 4 * 4;
+#endif
+
+#ifdef GL_DOUBLE_MAT2X3
     case GL_DOUBLE_MAT2X3: return 2 * 3;
     case GL_DOUBLE_MAT2X4: return 2 * 4;
     case GL_DOUBLE_MAT3X2: return 3 * 2;
@@ -485,6 +488,9 @@ GLenum getBaseTypeOfGLType(GLenum type)
     case GL_DOUBLE_MAT2:
     case GL_DOUBLE_MAT3:
     case GL_DOUBLE_MAT4:
+#endif
+
+#ifdef GL_DOUBLE_MAT2X3
     case GL_DOUBLE_MAT2X3:
     case GL_DOUBLE_MAT2X4:
     case GL_DOUBLE_MAT3X2:
