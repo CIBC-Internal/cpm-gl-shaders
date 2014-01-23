@@ -78,6 +78,10 @@ GLuint loadShaderProgram(const std::list<ShaderSource>& shaders)
       deleteProgramAndShaders();
       throw std::runtime_error("Failed to compile shader.");
     }
+
+    // Attach the shader to the program
+    GL(glAttachShader(program, shader));
+
     ++idx;
   }
 

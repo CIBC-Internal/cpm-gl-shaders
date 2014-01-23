@@ -8,6 +8,7 @@
 #include <file-util/FileUtil.hpp>
 
 using namespace CPM_BATCH_TESTING_NS;
+namespace gls = CPM_GL_SHADERS_NS ;
 
 TEST_F(ContextTestFixture, TestBasicRendering)
 {
@@ -34,12 +35,44 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   std::string fragmentShader = CPM_FILE_UTIL_NS::readFile("shaders/Color.fsh");
 
   // Compile and link vertex and fragment shader into a program.
-  CPM_GL_SHADERS_NS::loadShaderProgram(
+  GLuint program = CPM_GL_SHADERS_NS::loadShaderProgram(
       {
-        CPM_GL_SHADERS_NS::ShaderSource({vertexShader.c_str()}, GL_VERTEX_SHADER),
-        CPM_GL_SHADERS_NS::ShaderSource({fragmentShader.c_str()}, GL_FRAGMENT_SHADER),
+        gls::ShaderSource({vertexShader.c_str()}, GL_VERTEX_SHADER),
+        gls::ShaderSource({fragmentShader.c_str()}, GL_FRAGMENT_SHADER),
       });
+
+  std::string nameInCode;
+
+  // Retrieve information regarding attributes.
+  std::vector<gls::ShaderAttribute> attribs = gls::getProgramAttributes(program);
+
+  // We should have retrieved the aPos, and aColorFloat attributes.
+  ASSERT_EQ(2, attribs.size());
+  for (const gls::ShaderAttribute& attrib : attribs)
+  {
+    nameInCode = attrib.nameInCode;
+    if (attrib.type == GL_FLOAT_VEC3)
+    {
+      EXPECT_EQ(1, attrib.size);
+      EXPECT_EQ("aPos", nameInCode);
+    }
+    else
+    {
+      EXPECT_EQ(GL_FLOAT_VEC4, attrib.type);
+      EXPECT_EQ(1, attrib.size);
+      EXPECT_EQ("aColorFloat", nameInCode);
+    }
+  }
+
+  // Retrieve information regarding uniforms.
+  std::vector<gls::ShaderUniform> uniforms = gls::getProgramUniforms(program);
   
+  // Ensure uProjIVObject is the only uniform.
+  ASSERT_EQ(1, uniforms.size());
+  nameInCode = uniforms[0].nameInCode;
+  EXPECT_EQ(GL_FLOAT_MAT4, uniforms[0].type);
+  EXPECT_EQ(1, uniforms[0].size);
+  EXPECT_EQ("uProjIVObject", nameInCode);
 
 }
 
