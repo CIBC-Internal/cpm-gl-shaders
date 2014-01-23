@@ -66,6 +66,13 @@ CPM_AddModule("file_util"
   GIT_REPOSITORY "https://github.com/iauns/cpm-file-util"
   GIT_TAG 1.0.0)
 
+# ++ MODULE: GLM
+CPM_AddModule("GLM"
+  GIT_REPOSITORY "https://github.com/iauns/cpm-glm"
+  GIT_TAG "1.0.2"
+  USE_EXISTING_VER TRUE
+  )
+
 CPM_Finish()
 
 #-----------------------------------------------------------------------

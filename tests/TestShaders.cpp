@@ -6,9 +6,12 @@
 
 #include <gl-shaders/GLShader.hpp>
 #include <file-util/FileUtil.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>   // glm::translate, glm::rotate, glm::perspective
+#include <glm/gtc/type_ptr.hpp>           // glm::value_ptr
 
 using namespace CPM_BATCH_TESTING_NS;
-namespace gls = CPM_GL_SHADERS_NS ;
+namespace gls = CPM_GL_SHADERS_NS;
 
 TEST_F(ContextTestFixture, TestBasicRendering)
 {
@@ -18,10 +21,10 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   // Position data only.
   std::vector<float> vboData = 
   {
-    -1.0f,  1.0f,  0.0f,
-     1.0f,  1.0f,  0.0f,
-    -1.0f, -1.0f,  0.0f,
-     1.0f, -1.0f,  0.0f
+    -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
+     1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
+    -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
+     1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
   };
   std::vector<std::string> attribNames = {"aPos"};
 
@@ -74,6 +77,43 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   EXPECT_EQ(1, uniforms[0].size);
   EXPECT_EQ("uProjIVObject", nameInCode);
 
+  // Construct VBO.
+  GLuint vbo;
+  GL(glGenBuffers(1, &vbo));
+  GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+  GL(glBufferData(GL_ARRAY_BUFFER, 
+                  static_cast<GLsizeiptr>(vboData.size() * sizeof(float)),
+                  reinterpret_cast<GLvoid*>(&vboData[0]), GL_STATIC_DRAW));
+
+  // Construct IBO
+  GLuint ibo;
+  GL(glGenBuffers(1, &ibo));
+  GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+  GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                  static_cast<GLsizeiptr>(iboData.size() * sizeof(uint64_t)),
+                  reinterpret_cast<GLvoid*>(&iboData[0]), GL_STATIC_DRAW));
+
+  // Number of elements corresponds to the size of the index buffer.
+  //GLuint numElements = static_cast<GLuint>(iboData.size());
+
+  //-----------------
+  // Render the quad
+  //-----------------
+  // Bind shader
+  GL(glUseProgram(program));
+
+  // Bind VBO and IBO
+  GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+  GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+
+  // Build projection matrix looking down negative Z.
+  float aspect = static_cast<float>(640) / static_cast<float>(480);
+  glm::mat4 projection = glm::perspective(0.59f, aspect, 1.0f, 2000.0f);
+
+  // Assign project to appropriate uniform (the only uniform currently).
+  GL(glUniformMatrix4fv(static_cast<GLint>(uniforms[0].uniformLoc), 1, false,
+                        static_cast<const GLfloat*>(glm::value_ptr(projection))));
+  
 }
 
 
