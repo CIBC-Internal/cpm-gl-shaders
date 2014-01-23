@@ -18,15 +18,14 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   // Since we are using ContextTestFixture, a context has already been created
   // for us by the time that we get here.
 
-  // Position data only.
   std::vector<float> vboData = 
   {
-    -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
-     1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
-    -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
-     1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
+    // Color (aColorFloat)     position (aPos)
+     0.0f, 1.0f, 0.0f, 1.0f,  -1.0f,  1.0f,  0.0f,
+     0.0f, 1.0f, 0.0f, 1.0f,   1.0f,  1.0f,  0.0f,
+     0.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f,  0.0f,
+     0.0f, 1.0f, 0.0f, 1.0f,   1.0f, -1.0f,  0.0f,  
   };
-  std::vector<std::string> attribNames = {"aPos"};
 
   // 16-bit iboData
   std::vector<uint16_t> iboData =
@@ -49,23 +48,21 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   // Retrieve information regarding attributes.
   std::vector<gls::ShaderAttribute> attribs = gls::getProgramAttributes(program);
 
-  // We should have retrieved the aPos, and aColorFloat attributes.
+  // Sort attributes alphebetically so we know what order they will come in.
+  // Also useful when binding attributes programatically.
+  gls::sortAttributesAlphabetically(attribs);
+
   ASSERT_EQ(2, attribs.size());
-  for (const gls::ShaderAttribute& attrib : attribs)
-  {
-    nameInCode = attrib.nameInCode;
-    if (attrib.type == GL_FLOAT_VEC3)
-    {
-      EXPECT_EQ(1, attrib.size);
-      EXPECT_EQ("aPos", nameInCode);
-    }
-    else
-    {
-      EXPECT_EQ(GL_FLOAT_VEC4, attrib.type);
-      EXPECT_EQ(1, attrib.size);
-      EXPECT_EQ("aColorFloat", nameInCode);
-    }
-  }
+
+  nameInCode = attribs[0].nameInCode;
+  EXPECT_EQ(GL_FLOAT_VEC4, attribs[0].type);
+  EXPECT_EQ(1, attribs[0].size);
+  EXPECT_EQ("aColorFloat", nameInCode);
+
+  nameInCode = attribs[1].nameInCode;
+  EXPECT_EQ(GL_FLOAT_VEC3, attribs[1].type);
+  EXPECT_EQ(1, attribs[1].size);
+  EXPECT_EQ("aPos", nameInCode);
 
   // Retrieve information regarding uniforms.
   std::vector<gls::ShaderUniform> uniforms = gls::getProgramUniforms(program);
@@ -90,15 +87,17 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   GL(glGenBuffers(1, &ibo));
   GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
   GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                  static_cast<GLsizeiptr>(iboData.size() * sizeof(uint64_t)),
+                  static_cast<GLsizeiptr>(iboData.size() * sizeof(uint16_t)),
                   reinterpret_cast<GLvoid*>(&iboData[0]), GL_STATIC_DRAW));
-
-  // Number of elements corresponds to the size of the index buffer.
-  //GLuint numElements = static_cast<GLuint>(iboData.size());
 
   //-----------------
   // Render the quad
   //-----------------
+
+  // This function is from our test fixture ContextTestFixture from
+  // cpm-gl-batch-testing.
+  beginFrame();
+
   // Bind shader
   GL(glUseProgram(program));
 
@@ -110,10 +109,20 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   float aspect = static_cast<float>(640) / static_cast<float>(480);
   glm::mat4 projection = glm::perspective(0.59f, aspect, 1.0f, 2000.0f);
 
-  // Assign project to appropriate uniform (the only uniform currently).
+  // Assign projection to appropriate uniform (the only uniform currently).
   GL(glUniformMatrix4fv(static_cast<GLint>(uniforms[0].uniformLoc), 1, false,
                         static_cast<const GLfloat*>(glm::value_ptr(projection))));
-  
+
+  // Properly assign attributes. We have already sorted the uniforms in
+  // alphabetical order, and we have ensured that the VBO was built in
+  // alphabetical order. So all we have to do is bind the attributes according
+  // to the sorted attribute vector.
+  gls::bindAllAttributes(&attribs[0], attribs.size());
+
+  GL(glDrawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(iboData.size()),
+                    GL_UNSIGNED_SHORT, 0));
+
+  gls::unbindAllAttributes(&attribs[0], attribs.size());
 }
 
 

@@ -4,9 +4,13 @@
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
+#include <functional>
 #include "GLShader.hpp"
 
 namespace CPM_GL_SHADERS_NS {
+
+size_t getSizeOfGLType(GLenum type);
+GLsizei calculateStride(ShaderAttribute* array, size_t size);
 
 GLuint loadShaderProgram(const std::list<ShaderSource>& shaders)
 {
@@ -152,6 +156,135 @@ void sortAttributesAlphabetically(std::vector<ShaderAttribute>& attribs)
   std::sort(attribs.begin(), attribs.end(), comparison);
 }
 
+void bindAllAttributes(ShaderAttribute* array, size_t size)
+{
+  GLsizei stride = calculateStride(array, size);
+  size_t offset = 0;
+  for (size_t i = 0; i < size; ++i)
+  {
+    GL(glEnableVertexAttribArray(static_cast<GLuint>(array[i].attribLoc)));
+    GL(glVertexAttribPointer(static_cast<GLuint>(array[i].attribLoc),
+                             array[i].size, array[i].type, array[i].normalize,
+                             stride, reinterpret_cast<const void*>(offset)));
+    offset += array[i].sizeBytes;
+  }
+}
+
+void unbindAllAttributes(ShaderAttribute* array, size_t size)
+{
+  for (size_t i = 0; i < size; ++i)
+  {
+    GL(glDisableVertexAttribArray(static_cast<GLuint>(array[i].attribLoc)));
+  }
+}
+
+void bindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
+                          ShaderAttribute* subset, size_t subsetSize)
+{
+  if (supersetSize == subsetSize)
+  {
+    std::cerr << "bindSubsetAttributes: Warning - supersetSize == subsetSize\n";
+    std::cerr << "When this equality holds, you should directly call bindAllAttributes\n";
+    std::cerr << "instead of bindSubsetAttributes." << std::endl;
+  }
+
+  GLsizei stride = calculateStride(superset, supersetSize);
+  size_t offset = 0;
+  for (size_t i = 0; i < supersetSize; ++i)
+  {
+    int attribIndex = hasAttribute(subset, subsetSize, superset[i].nameInCode);
+    if (attribIndex != -1)
+    {
+      GL(glEnableVertexAttribArray(static_cast<GLuint>(subset[attribIndex].attribLoc)));
+      GL(glVertexAttribPointer(static_cast<GLuint>(subset[attribIndex].attribLoc),
+                               superset[i].size, superset[i].type, superset[i].normalize,
+                               stride, reinterpret_cast<const void*>(offset)));
+    }
+    offset += superset[i].sizeBytes;
+  }
+}
+
+void unbindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
+                            ShaderAttribute* subset, size_t subsetSize)
+{
+  for (size_t i = 0; i < supersetSize; ++i)
+  {
+    int attribIndex = hasAttribute(subset, subsetSize, superset[i].nameInCode);
+    if (attribIndex != -1)
+    {
+      GL(glDisableVertexAttribArray(static_cast<GLuint>(subset[attribIndex].attribLoc)));
+    }
+  }
+}
+
+std::tuple<size_t, size_t> buildPreappliedAttrib(
+    ShaderAttribute* superset, size_t supersetSize,
+    ShaderAttribute* subset, size_t subsetSize,
+    ShaderAttributeApplied* out, size_t outMaxSize)
+{
+  GLsizei stride = calculateStride(superset, supersetSize);
+  size_t offset = 0;
+  size_t appliedSize = 0;
+
+  for (size_t i = 0; i < supersetSize; ++i)
+  {
+    int attribIndex = hasAttribute(subset, subsetSize, superset[i].nameInCode);
+    if (attribIndex != -1)
+    {
+      if (appliedSize == outMaxSize)
+      {
+        std::cerr << "cpm-gl-shaders - buildPreAppliedAttrib: outMaxSize too small" << std::endl;
+        throw std::runtime_error("outMaxSize too small.");
+        return std::make_tuple(0,0);
+      }
+
+      out[appliedSize].attribLoc = subset[attribIndex].attribLoc;
+      out[appliedSize].size      = superset[i].size;
+      out[appliedSize].type      = superset[i].type;
+      out[appliedSize].normalize = superset[i].normalize;
+      out[appliedSize].offset    = offset;
+
+      ++appliedSize;
+    }
+    offset += superset[i].sizeBytes;
+  }
+
+  return std::make_tuple(appliedSize, stride);
+}
+
+
+
+void bindPreappliedAttrib(ShaderAttributeApplied* array, size_t size, size_t stride)
+{
+  for (size_t i = 0; i < size; ++i)
+  {
+    GL(glEnableVertexAttribArray(static_cast<GLuint>(array[i].attribLoc)));
+    GL(glVertexAttribPointer(static_cast<GLuint>(array[i].attribLoc),
+                             array[i].size, array[i].type, array[i].normalize,
+                             stride, reinterpret_cast<const void*>(array[i].offset)));
+  }
+}
+
+void unbindPreappliedAttrib(ShaderAttributeApplied* array, size_t size)
+{
+  for (size_t i = 0; i < size; ++i)  
+  {
+    GL(glDisableVertexAttribArray(static_cast<GLuint>(array[i].attribLoc)));
+  }
+}
+
+GLsizei calculateStride(ShaderAttribute* array, size_t size)
+{
+  // Calculate the stride if it is not already given to us.
+  GLsizei stride = 0;
+  for (size_t i = 0; i < size; ++i)
+  {
+    stride += array[i].sizeBytes;
+  }
+
+  return stride;
+}
+
 std::vector<ShaderUniform> getProgramUniforms(GLuint program)
 {
   GLint activeUniforms;
@@ -177,13 +310,26 @@ std::vector<ShaderUniform> getProgramUniforms(GLuint program)
   return uniforms;
 }
 
+int hasAttribute(ShaderAttribute* array, size_t size, const char* name)
+{
+  for (size_t i = 0; i < size; ++i)
+  {
+    if (std::strcmp(array[i].nameInCode, name) == 0)
+    {
+      return i;
+    }
+  }
 
+  return -1;
+}
 
-ShaderAttribute::ShaderAttribute(const std::string& name, GLint s, GLenum t, GLint loc) :
+ShaderAttribute::ShaderAttribute(const std::string& name, GLint s, GLenum t,
+                                 GLint loc, GLboolean norm) :
     size(s),
+    sizeBytes(0),
     type(t),
     attribLoc(loc),
-    normalize(false)
+    normalize(norm)
 {
   if (name.length() < MaxNameLength - 1)
   {
@@ -195,6 +341,8 @@ ShaderAttribute::ShaderAttribute(const std::string& name, GLint s, GLenum t, GLi
     std::cerr << msg << std::endl;
     throw std::runtime_error(msg);
   }
+
+  sizeBytes = getSizeOfGLType(t) * s;
 }
 
 ShaderUniform::ShaderUniform(const std::string& name, GLint s, GLenum t, GLint loc) :
@@ -214,6 +362,57 @@ ShaderUniform::ShaderUniform(const std::string& name, GLint s, GLenum t, GLint l
   }
 }
 
+size_t getSizeOfGLType(GLenum type)
+{
+  // Calculate the size of this attribute.
+  const size_t fsize = sizeof(GLfloat);
+  const size_t dsize = sizeof(GLdouble);
+  const size_t isize = sizeof(GLint);
+  const size_t uisize = sizeof(GLuint);
+  switch (type)
+  {
+    case GL_FLOAT: return fsize;
+    case GL_FLOAT_VEC2: return fsize * 2;
+    case GL_FLOAT_VEC3: return fsize * 3;
+    case GL_FLOAT_VEC4: return fsize * 4;
+    case GL_FLOAT_MAT2: return fsize * 2 * 2;
+    case GL_FLOAT_MAT3: return fsize * 3 * 3;
+    case GL_FLOAT_MAT4: return fsize * 4 * 4;
+    //case GL_FLOAT_MAT2X3: return fsize * 2 * 3;
+    //case GL_FLOAT_MAT2X4: return fsize * 2 * 4;
+    //case GL_FLOAT_MAT3X2: return fsize * 3 * 2;
+    //case GL_FLOAT_MAT3X4: return fsize * 3 * 4;
+    //case GL_FLOAT_MAT4X2: return fsize * 4 * 2;
+    //case GL_FLOAT_MAT4X3: return fsize * 4 * 3;
+    //case GL_INT: return isize;
+    //case GL_INT_VEC2: return isize * 2;
+    //case GL_INT_VEC3: return isize * 3;
+    //case GL_INT_VEC4: return isize * 4;
+    //case GL_UNSIGNED_INT: return uisize;
+    //case GL_UNSIGNED_INT_VEC2: return uisize * 2;
+    //case GL_UNSIGNED_INT_VEC3: return uisize * 3;
+    //case GL_UNSIGNED_INT_VEC4: return uisize * 4;
+    //case GL_DOUBLE: return dsize;
+    //case GL_DOUBLE_VEC2: return dsize * 2;
+    //case GL_DOUBLE_VEC3: return dsize * 3;
+    //case GL_DOUBLE_VEC4: return dsize * 4;
+    //case GL_DOUBLE_MAT2: return dsize * 2 * 2;
+    //case GL_DOUBLE_MAT3: return dsize * 3 * 3;
+    //case GL_DOUBLE_MAT4: return dsize * 4 * 4;
+    //case GL_DOUBLE_MAT2X3: return dsize * 2 * 3;
+    //case GL_DOUBLE_MAT2X4: return dsize * 2 * 4;
+    //case GL_DOUBLE_MAT3X2: return dsize * 3 * 2;
+    //case GL_DOUBLE_MAT3X4: return dsize * 3 * 4;
+    //case GL_DOUBLE_MAT4X2: return dsize * 4 * 2;
+    //case GL_DOUBLE_MAT4x3: return dsize * 4 * 3;
+
+    default:
+      std::cerr << "cpm-gl-shaders: Unrecognized GL type" << std::endl;
+      return 0;
+  }
+
+  return 0;
+}
 
 } // namespace CPM_GL_SHADER_NS
 
