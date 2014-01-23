@@ -22,10 +22,10 @@ TEST_F(ContextTestFixture, TestBasicRendering)
   std::vector<float> vboData = 
   {
     // Color (aColorFloat)     position (aPos)
-     0.0f, 1.0f, 0.0f, 1.0f,  -1.0f,  1.0f,  0.0f,
-     0.0f, 1.0f, 0.0f, 1.0f,   1.0f,  1.0f,  0.0f,
-     0.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f,  0.0f,
-     0.0f, 1.0f, 0.0f, 1.0f,   1.0f, -1.0f,  0.0f,  
+     0.0f, 1.0f, 0.0f, 1.0f,  -1.0f,  1.0f, -5.0f,
+     0.0f, 1.0f, 0.0f, 1.0f,   1.0f,  1.0f, -5.0f,
+     0.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f, -5.0f,
+     0.0f, 1.0f, 0.0f, 1.0f,   1.0f, -1.0f, -5.0f,  
   };
 
   // 16-bit iboData
@@ -129,6 +129,12 @@ TEST_F(ContextTestFixture, TestBasicRendering)
                     GL_UNSIGNED_SHORT, 0));
 
   gls::unbindAllAttributes(&attribs[0], attribs.size());
+
+  compareFBOWithExistingFile("basicQuad.png",
+                             TEST_IMAGE_OUTPUT_DIR,
+                             TEST_IMAGE_COMPARE_DIR,
+                             TEST_PERCEPTUAL_COMPARE_BINARY,
+                             100);
 }
 
 
