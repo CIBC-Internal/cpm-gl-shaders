@@ -251,7 +251,7 @@ TEST_F(ContextTestFixture, TestPreapplicationAttributes)
                              TEST_IMAGE_OUTPUT_DIR,
                              TEST_IMAGE_COMPARE_DIR,
                              TEST_PERCEPTUAL_COMPARE_BINARY,
-                             300);
+                             350);
 }
 
 
