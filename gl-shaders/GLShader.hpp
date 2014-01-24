@@ -53,7 +53,7 @@ struct ShaderAttribute
   ///                   VBO attribute list)..
   /// \param normalize  If 1, then this attribute will be normalized between 0-1.
   ///                   Only used if this is a VBO attribute list.
-  ShaderAttribute(const std::string& name, GLint s, GLenum t, GLint loc,
+  ShaderAttribute(const std::string& name, GLint s, GLenum t, GLint loc = 0,
                   GLboolean normalize = 0);
 
   GLint     size;       ///< Size of attribute, in units of 'type'.
