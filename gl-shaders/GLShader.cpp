@@ -359,6 +359,11 @@ bool operator==(const ShaderAttribute& a, const ShaderAttribute& b)
       && (a.nameInCode == b.nameInCode);
 }
 
+bool operator!=(const ShaderAttribute& a, const ShaderAttribute& b)
+{
+  return !(a == b);
+}
+
 ShaderUniform::ShaderUniform(const std::string& name, GLint s, GLenum t, GLint loc) :
     size(s),
     type(t),
@@ -382,6 +387,11 @@ bool operator==(const ShaderUniform& a, const ShaderUniform& b)
       && (a.type == b.type)
       //&& (a.uniformLoc == b.uniformLoc)
       && (std::strcmp(a.nameInCode, b.nameInCode) == 0);
+}
+
+bool operator!=(const ShaderUniform& a, const ShaderUniform& b)
+{
+  return !(a == b);
 }
 
 size_t getSizeOfGLType(GLenum type)

@@ -67,6 +67,7 @@ struct ShaderAttribute
 };
 
 bool operator==(const ShaderAttribute& a, const ShaderAttribute& b);
+bool operator!=(const ShaderAttribute& a, const ShaderAttribute& b);
 
 /// Determines if the given attribute array has the attribute with 'name'.
 /// Will perform a strcmp on every string (nameInCode).
@@ -160,6 +161,7 @@ struct ShaderUniform
 };
 
 bool operator==(const ShaderUniform& a, const ShaderUniform& b);
+bool operator!=(const ShaderUniform& a, const ShaderUniform& b);
 
 /// Collects all shader uniforms into a vector of ShaderUniform.
 std::vector<ShaderUniform> getProgramUniforms(GLuint program);
