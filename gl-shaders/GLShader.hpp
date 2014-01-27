@@ -12,10 +12,6 @@
 
 // 24 is the size of the overhead of an std::string in GCC's standard library
 // on a 64 bit system, not including the memory allocated for the string itself.
-#ifndef CPM_GLSHADER_MAX_ATTRIB_NAME
-#define CPM_GLSHADER_MAX_ATTRIB_NAME 24
-#endif
-
 #ifndef CPM_GLSHADER_MAX_UNIFORM_NAME
 #define CPM_GLSHADER_MAX_UNIFORM_NAME 24
 #endif
@@ -44,8 +40,6 @@ GLuint loadShaderProgram(const std::list<ShaderSource>& shaders);
 
 struct ShaderAttribute
 {
-  static const int MaxNameLength = (CPM_GLSHADER_MAX_ATTRIB_NAME);
-
   /// \param name       Name of the attribute in code.
   /// \param s          Size of the attributes in units of type (t).
   /// \param t          OpenGL type of the attribute.
@@ -69,14 +63,16 @@ struct ShaderAttribute
   GLenum    baseType;   ///< Base GL type.
   int       numComps;   ///< Number of components in the GL base type.
 
-  char      nameInCode[MaxNameLength];  ///< Name of the attribute in-code.
+  std::string nameInCode; ///< name of the attribute in-code.
 };
+
+bool operator==(const ShaderAttribute& a, const ShaderAttribute& b);
 
 /// Determines if the given attribute array has the attribute with 'name'.
 /// Will perform a strcmp on every string (nameInCode).
 /// \return -1 if no attribute exists, otherwise this returns the index to
 ///         the attribute.
-int hasAttribute(ShaderAttribute* array, size_t size, const char* name);
+int hasAttribute(ShaderAttribute* array, size_t size, const std::string& name);
 
 /// Collects all shader attributes into a vector of ShaderAttribute.
 std::vector<ShaderAttribute> getProgramAttributes(GLuint program);
@@ -160,7 +156,10 @@ struct ShaderUniform
   GLenum      type;         ///< GL type.
   GLint       uniformLoc;   ///< Location as returned by glGetUniformLocation.
   char        nameInCode[MaxNameLength];  ///< Name of the uniform in-code.
+
 };
+
+bool operator==(const ShaderUniform& a, const ShaderUniform& b);
 
 /// Collects all shader uniforms into a vector of ShaderUniform.
 std::vector<ShaderUniform> getProgramUniforms(GLuint program);

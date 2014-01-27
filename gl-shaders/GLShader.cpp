@@ -156,7 +156,7 @@ void sortAttributesAlphabetically(std::vector<ShaderAttribute>& attribs)
 {
   auto comparison = [](const ShaderAttribute& lhs, const ShaderAttribute& rhs)
   {
-    return std::strcmp(lhs.nameInCode, rhs.nameInCode) < 0;
+    return lhs.nameInCode < rhs.nameInCode;
   };
   std::sort(attribs.begin(), attribs.end(), comparison);
 }
@@ -316,11 +316,11 @@ std::vector<ShaderUniform> getProgramUniforms(GLuint program)
   return uniforms;
 }
 
-int hasAttribute(ShaderAttribute* array, size_t size, const char* name)
+int hasAttribute(ShaderAttribute* array, size_t size, const std::string& name)
 {
   for (size_t i = 0; i < size; ++i)
   {
-    if (std::strcmp(array[i].nameInCode, name) == 0)
+    if (array[i].nameInCode == name)
     {
       return i;
     }
@@ -335,22 +335,28 @@ ShaderAttribute::ShaderAttribute(const std::string& name, GLint s, GLenum t,
     sizeBytes(0),
     type(t),
     attribLoc(loc),
-    normalize(norm)
+    normalize(norm),
+    nameInCode(name)
 {
-  if (name.length() < MaxNameLength - 1)
-  {
-    std::strcpy(nameInCode, name.c_str());
-  }
-  else
-  {
-    const char* msg = "cpm-gl-shader: Attribute name longer than CPM_GLSHADER_MAX_ATTRIB_NAME - 1.";
-    std::cerr << msg << std::endl;
-    throw std::runtime_error(msg);
-  }
-
   sizeBytes = getSizeOfGLType(t) * s;
   baseType = getBaseTypeOfGLType(t);
   numComps = getNumComponentsOfGLType(t) * s;
+}
+
+bool operator==(const ShaderAttribute& a, const ShaderAttribute& b)
+{
+  // We do not compare size or type because these will vary based on
+  // compiler. We normalize to a baseType, size in bytes, and number of
+  // components. We only want to know if the attribute is the same in the
+  // sense that we can substitute the underlying data.
+  return //(a.size == b.size)
+      (a.sizeBytes == b.sizeBytes)
+      //&& (a.type == b.type)
+      //&& (a.attribLoc == b.attribLoc)
+      //&& (a.normalize == b.normalize)
+      && (a.baseType == b.baseType)
+      && (a.numComps == b.numComps)
+      && (a.nameInCode == b.nameInCode);
 }
 
 ShaderUniform::ShaderUniform(const std::string& name, GLint s, GLenum t, GLint loc) :
@@ -368,6 +374,14 @@ ShaderUniform::ShaderUniform(const std::string& name, GLint s, GLenum t, GLint l
     std::cerr << msg << std::endl;
     throw std::runtime_error(msg);
   }
+}
+
+bool operator==(const ShaderUniform& a, const ShaderUniform& b)
+{
+  return (a.size == b.size)
+      && (a.type == b.type)
+      //&& (a.uniformLoc == b.uniformLoc)
+      && (std::strcmp(a.nameInCode, b.nameInCode) == 0);
 }
 
 size_t getSizeOfGLType(GLenum type)

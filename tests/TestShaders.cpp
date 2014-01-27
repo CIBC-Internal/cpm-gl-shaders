@@ -195,6 +195,17 @@ TEST_F(ContextTestFixture, TestPreapplicationAttributes)
     gls::ShaderAttribute("aColorFloat", 4, GL_FLOAT),
     gls::ShaderAttribute("aPos", 3, GL_FLOAT),
   };
+
+  // Check to see if our shader atttribute array is equal to the sorted one
+  // we built above, even though the high level type and attribute location
+  // may differ.
+  auto at1 = attribs.begin();
+  auto at2 = vboAttribs.begin();
+  for (;at1 != attribs.end() && at2 != vboAttribs.end(); ++at1, ++at2)
+  {
+    EXPECT_TRUE(*at1 == *at2);
+  }
+
   const size_t AppArraySize = 2;
   gls::ShaderAttributeApplied attribApplyArray[AppArraySize];
   std::tuple<size_t, size_t> applyResult = gls::buildPreappliedAttrib(
