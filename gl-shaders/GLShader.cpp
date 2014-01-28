@@ -367,26 +367,16 @@ bool operator!=(const ShaderAttribute& a, const ShaderAttribute& b)
 ShaderUniform::ShaderUniform(const std::string& name, GLint s, GLenum t, GLint loc) :
     size(s),
     type(t),
-    uniformLoc(loc)
-{
-  if (name.length() < MaxNameLength - 1)
-  {
-    std::strcpy(nameInCode, name.c_str());
-  }
-  else
-  {
-    const char* msg = "cpm-gl-shader: Uniform name longer than CPM_GLSHADER_MAX_UNIFORM_NAME - 1.";
-    std::cerr << msg << std::endl;
-    throw std::runtime_error(msg);
-  }
-}
+    uniformLoc(loc),
+    nameInCode(name)
+{}
 
 bool operator==(const ShaderUniform& a, const ShaderUniform& b)
 {
   return (a.size == b.size)
       && (a.type == b.type)
       //&& (a.uniformLoc == b.uniformLoc)
-      && (std::strcmp(a.nameInCode, b.nameInCode) == 0);
+      && (a.nameInCode == b.nameInCode);
 }
 
 bool operator!=(const ShaderUniform& a, const ShaderUniform& b)

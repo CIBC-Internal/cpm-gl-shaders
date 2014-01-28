@@ -10,12 +10,6 @@
 #include <tuple>
 #include <gl-platform/GLPlatform.hpp>
 
-// 24 is the size of the overhead of an std::string in GCC's standard library
-// on a 64 bit system, not including the memory allocated for the string itself.
-#ifndef CPM_GLSHADER_MAX_UNIFORM_NAME
-#define CPM_GLSHADER_MAX_UNIFORM_NAME 24
-#endif
-
 namespace CPM_GL_SHADERS_NS {
 
 struct ShaderSource
@@ -138,8 +132,8 @@ std::tuple<size_t, size_t> buildPreappliedAttrib(
 /// subset as calculated prior by buildPreAppliedAttrib. This function is more
 /// efficient and cache friendly than bindAllAttributes or bindSubsetAttributes.
 /// \param array  \p out from buildPreAppliedAttrib.
-/// \param size   Second tuple parameter from buildPreAppliedAttrib.
-/// \param stride First tuple parameter from buildPreAppliedAttrib.
+/// \param size   First tuple parameter from buildPreAppliedAttrib.
+/// \param stride Second tuple parameter from buildPreAppliedAttrib.
 void bindPreappliedAttrib(ShaderAttributeApplied* array, size_t size,
                           size_t stride);
 
@@ -149,15 +143,12 @@ void unbindPreappliedAttrib(ShaderAttributeApplied* array, size_t size);
 /// Generic structure for holding a shader uniform.
 struct ShaderUniform
 {
-  static const int MaxNameLength = (CPM_GLSHADER_MAX_UNIFORM_NAME);
-
   ShaderUniform(const std::string& name, GLint s, GLenum t, GLint loc);
 
   GLint       size;         ///< Size of uniform, in units of 'type'.
   GLenum      type;         ///< GL type.
   GLint       uniformLoc;   ///< Location as returned by glGetUniformLocation.
-  char        nameInCode[MaxNameLength];  ///< Name of the uniform in-code.
-
+  std::string nameInCode;   ///< Name of the uniform in-code.
 };
 
 bool operator==(const ShaderUniform& a, const ShaderUniform& b);
