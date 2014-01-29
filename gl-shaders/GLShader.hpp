@@ -67,7 +67,7 @@ bool operator!=(const ShaderAttribute& a, const ShaderAttribute& b);
 /// Will perform a strcmp on every string (nameInCode).
 /// \return -1 if no attribute exists, otherwise this returns the index to
 ///         the attribute.
-int hasAttribute(ShaderAttribute* array, size_t size, const std::string& name);
+int hasAttribute(const ShaderAttribute* array, size_t size, const std::string& name);
 
 /// Collects all shader attributes into a vector of ShaderAttribute.
 std::vector<ShaderAttribute> getProgramAttributes(GLuint program);
@@ -77,10 +77,10 @@ void sortAttributesAlphabetically(std::vector<ShaderAttribute>& attribs);
 
 /// Binds all attributes in given ShaderAttribute array.
 /// Note: Be sure to set the normalize ShaderAttribute variable appropriately.
-void bindAllAttributes(ShaderAttribute* array, size_t size);
+void bindAllAttributes(const ShaderAttribute* array, size_t size);
 
 /// Unbinds all attributes as bound by bindAllAttributes.
-void unbindAllAttributes(ShaderAttribute* array, size_t size);
+void unbindAllAttributes(const ShaderAttribute* array, size_t size);
 
 /// Binds all of \p subset's attributes, using superset as the guide that
 /// determines the stride between attributes. Use this when a VBO has more
@@ -89,12 +89,12 @@ void unbindAllAttributes(ShaderAttribute* array, size_t size);
 /// will print a warning, then proceed. If it finds unsatsified attributes,
 /// an exception will be thrown.
 /// Note: Be sure to set the normalize ShaderAttribute variable appropriately.
-void bindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
-                          ShaderAttribute* subset, size_t subsetSize);
+void bindSubsetAttributes(const ShaderAttribute* superset, size_t supersetSize,
+                          const ShaderAttribute* subset, size_t subsetSize);
 
 /// Unbind all attributes bound by bindSubsetAttributes.
-void unbindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
-                            ShaderAttribute* subset, size_t subsetSize);
+void unbindSubsetAttributes(const ShaderAttribute* superset, size_t supersetSize,
+                            const ShaderAttribute* subset, size_t subsetSize);
 
 /// Minimal structure based on the intersection between shader and VBO.
 struct ShaderAttributeApplied
@@ -119,13 +119,13 @@ struct ShaderAttributeApplied
 /// \param out          Array that will be modified with the appropriate binding
 ///                     values.
 /// \param outMaxSize   Maximum size of \p out. An exception is thrown if this
-///                     is not large enough to hold all attributes.
+///                     is not latge enough to hold all attributes.
 /// \return The first parameter of the tuple is the resultant size of the
 ///         modified ShaderAtributeApplied array. The second is the stride of
 ///         all components combined together.
 std::tuple<size_t, size_t> buildPreappliedAttrib(
-    ShaderAttribute* superset, size_t supersetSize,
-    ShaderAttribute* subset, size_t subsetSize,
+    const ShaderAttribute* superset, size_t supersetSize,
+    const ShaderAttribute* subset, size_t subsetSize,
     ShaderAttributeApplied* out, size_t outMaxSize);
 
 /// Binds shader attributes based off of the intersection of a superset and
@@ -134,11 +134,11 @@ std::tuple<size_t, size_t> buildPreappliedAttrib(
 /// \param array  \p out from buildPreAppliedAttrib.
 /// \param size   First tuple parameter from buildPreAppliedAttrib.
 /// \param stride Second tuple parameter from buildPreAppliedAttrib.
-void bindPreappliedAttrib(ShaderAttributeApplied* array, size_t size,
+void bindPreappliedAttrib(const ShaderAttributeApplied* array, size_t size,
                           size_t stride);
 
 /// Unbind all attributes bound in bindPreappliedAttrib.
-void unbindPreappliedAttrib(ShaderAttributeApplied* array, size_t size);
+void unbindPreappliedAttrib(const ShaderAttributeApplied* array, size_t size);
 
 /// Generic structure for holding a shader uniform.
 struct ShaderUniform

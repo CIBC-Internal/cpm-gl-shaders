@@ -9,7 +9,7 @@
 
 namespace CPM_GL_SHADERS_NS {
 
-GLsizei calculateStride(ShaderAttribute* array, size_t size);
+GLsizei calculateStride(const ShaderAttribute* array, size_t size);
 
 /// Retrieves the number of components associated with a particular GL type.
 size_t getSizeOfGLType(GLenum type);
@@ -161,7 +161,7 @@ void sortAttributesAlphabetically(std::vector<ShaderAttribute>& attribs)
   std::sort(attribs.begin(), attribs.end(), comparison);
 }
 
-void bindAllAttributes(ShaderAttribute* array, size_t size)
+void bindAllAttributes(const ShaderAttribute* array, size_t size)
 {
   GLsizei stride = calculateStride(array, size);
   size_t offset = 0;
@@ -175,7 +175,7 @@ void bindAllAttributes(ShaderAttribute* array, size_t size)
   }
 }
 
-void unbindAllAttributes(ShaderAttribute* array, size_t size)
+void unbindAllAttributes(const ShaderAttribute* array, size_t size)
 {
   for (size_t i = 0; i < size; ++i)
   {
@@ -183,8 +183,8 @@ void unbindAllAttributes(ShaderAttribute* array, size_t size)
   }
 }
 
-void bindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
-                          ShaderAttribute* subset, size_t subsetSize)
+void bindSubsetAttributes(const ShaderAttribute* superset, size_t supersetSize,
+                          const ShaderAttribute* subset, size_t subsetSize)
 {
   if (supersetSize == subsetSize)
   {
@@ -210,8 +210,8 @@ void bindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
   }
 }
 
-void unbindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
-                            ShaderAttribute* subset, size_t subsetSize)
+void unbindSubsetAttributes(const ShaderAttribute* superset, size_t supersetSize,
+                            const ShaderAttribute* subset, size_t subsetSize)
 {
   for (size_t i = 0; i < supersetSize; ++i)
   {
@@ -224,8 +224,8 @@ void unbindSubsetAttributes(ShaderAttribute* superset, size_t supersetSize,
 }
 
 std::tuple<size_t, size_t> buildPreappliedAttrib(
-    ShaderAttribute* superset, size_t supersetSize,
-    ShaderAttribute* subset, size_t subsetSize,
+    const ShaderAttribute* superset, size_t supersetSize,
+    const ShaderAttribute* subset, size_t subsetSize,
     ShaderAttributeApplied* out, size_t outMaxSize)
 {
   GLsizei stride = calculateStride(superset, supersetSize);
@@ -260,7 +260,7 @@ std::tuple<size_t, size_t> buildPreappliedAttrib(
 
 
 
-void bindPreappliedAttrib(ShaderAttributeApplied* array, size_t size, size_t stride)
+void bindPreappliedAttrib(const ShaderAttributeApplied* array, size_t size, size_t stride)
 {
   for (size_t i = 0; i < size; ++i)
   {
@@ -271,7 +271,7 @@ void bindPreappliedAttrib(ShaderAttributeApplied* array, size_t size, size_t str
   }
 }
 
-void unbindPreappliedAttrib(ShaderAttributeApplied* array, size_t size)
+void unbindPreappliedAttrib(const ShaderAttributeApplied* array, size_t size)
 {
   for (size_t i = 0; i < size; ++i)  
   {
@@ -279,7 +279,7 @@ void unbindPreappliedAttrib(ShaderAttributeApplied* array, size_t size)
   }
 }
 
-GLsizei calculateStride(ShaderAttribute* array, size_t size)
+GLsizei calculateStride(const ShaderAttribute* array, size_t size)
 {
   // Calculate the stride if it is not already given to us.
   GLsizei stride = 0;
@@ -316,7 +316,7 @@ std::vector<ShaderUniform> getProgramUniforms(GLuint program)
   return uniforms;
 }
 
-int hasAttribute(ShaderAttribute* array, size_t size, const std::string& name)
+int hasAttribute(const ShaderAttribute* array, size_t size, const std::string& name)
 {
   for (size_t i = 0; i < size; ++i)
   {
