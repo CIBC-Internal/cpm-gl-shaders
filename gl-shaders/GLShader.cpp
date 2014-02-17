@@ -397,7 +397,7 @@ size_t getSizeOfGLType(GLenum type)
 {
   size_t numComponents = getNumComponentsOfGLType(type);
   GLenum baseType      = getBaseTypeOfGLType(type);
-  size_t baseTypeSize  = getSizeOfBaseGLType(type);
+  size_t baseTypeSize  = getSizeOfBaseGLType(baseType);
   return numComponents * baseTypeSize;
 }
 
