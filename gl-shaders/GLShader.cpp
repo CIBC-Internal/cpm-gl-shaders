@@ -329,6 +329,15 @@ int hasAttribute(const ShaderAttribute* array, size_t size, const std::string& n
   return -1;
 }
 
+ShaderAttribute::ShaderAttribute() :
+    size(0),
+    sizeBytes(0),
+    type(GL_FLOAT),
+    attribLoc(0),
+    normalize(0),
+    nameInCode("")
+{}
+
 ShaderAttribute::ShaderAttribute(const std::string& name, GLint s, GLenum t,
                                  GLint loc, GLboolean norm) :
     size(s),

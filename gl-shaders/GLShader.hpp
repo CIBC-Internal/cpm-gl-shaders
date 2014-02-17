@@ -34,6 +34,8 @@ GLuint loadShaderProgram(const std::list<ShaderSource>& shaders);
 
 struct ShaderAttribute
 {
+  ShaderAttribute();
+
   /// \param name       Name of the attribute in code.
   /// \param s          Size of the attributes in units of type (t).
   /// \param t          OpenGL type of the attribute.
@@ -123,6 +125,8 @@ struct ShaderAttributeApplied
 /// \return The first parameter of the tuple is the resultant size of the
 ///         modified ShaderAtributeApplied array. The second is the stride of
 ///         all components combined together.
+/// \note  *ONLY* the following attributes are used inside of super set (the
+///         rest are ignored: nameInCode, sizeBytes, and normalize.
 std::tuple<size_t, size_t> buildPreappliedAttrib(
     const ShaderAttribute* superset, size_t supersetSize,
     const ShaderAttribute* subset, size_t subsetSize,
