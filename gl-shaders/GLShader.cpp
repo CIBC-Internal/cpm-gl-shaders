@@ -61,8 +61,13 @@ GLuint loadShaderProgram(const std::list<ShaderSource>& shaders)
     compiledShaders.push_back(shader);
 
     // Set the source and compile.
-    const char* contents = it->mSources[0];
-    GL(glShaderSource(shader, it->mSources.size(), &contents, NULL));
+    std::string fullSource;
+    for (const char* source : it->mSources)
+    {
+      fullSource += source;
+    }
+    const char* contents = fullSource.c_str();
+    GL(glShaderSource(shader, 1, &contents, NULL));
     GL(glCompileShader(shader));
 
     // Check the compile status.
