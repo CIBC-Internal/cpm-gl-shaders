@@ -18,7 +18,7 @@ if (UNIX)
 endif ()
 
 #------------------------------------------------------------------------------
-# Required CPM Setup - See: http://github.com/iauns/cpm
+# Required CPM Setup - See: http://github.com/CIBC-Internal/cpm
 #------------------------------------------------------------------------------
 set(CPM_DIR "${CMAKE_CURRENT_BINARY_DIR}/cpm-packages" CACHE TYPE STRING)
 find_package(Git)
@@ -29,15 +29,15 @@ if ((NOT DEFINED CPM_MODULE_CACHE_DIR) AND (NOT "$ENV{CPM_CACHE_DIR}" STREQUAL "
   set(CPM_MODULE_CACHE_DIR "$ENV{CPM_CACHE_DIR}")
 endif()
 if ((NOT EXISTS ${CPM_DIR}/CPM.cmake) AND (DEFINED CPM_MODULE_CACHE_DIR))
-  if (EXISTS "${CPM_MODULE_CACHE_DIR}/github_iauns_cpm")
+  if (EXISTS "${CPM_MODULE_CACHE_DIR}/github_cibcinternal_cpm")
     message(STATUS "Found cached version of CPM.")
-    file(COPY "${CPM_MODULE_CACHE_DIR}/github_iauns_cpm/" DESTINATION ${CPM_DIR})
+    file(COPY "${CPM_MODULE_CACHE_DIR}/github_cibcinternal_cpm/" DESTINATION ${CPM_DIR})
   endif()
 endif()
 if (NOT EXISTS ${CPM_DIR}/CPM.cmake)
-  message(STATUS "Cloning repo (https://github.com/iauns/cpm)")
+  message(STATUS "Cloning repo (https://github.com/CIBC-Internal/cpm)")
   execute_process(
-    COMMAND "${GIT_EXECUTABLE}" clone https://github.com/iauns/cpm ${CPM_DIR}
+    COMMAND "${GIT_EXECUTABLE}" clone https://github.com/CIBC-Internal/cpm ${CPM_DIR}
     RESULT_VARIABLE error_code
     OUTPUT_QUIET ERROR_QUIET)
   if(error_code)
@@ -52,31 +52,31 @@ CPM_AddModule("gl_shaders"
 
 # ++ EXTERNAL-MODULE: Google Test
 CPM_AddModule("google_test"
-  GIT_REPOSITORY "https://github.com/iauns/cpm-google-test"
-  GIT_TAG "1.0.2"
+  GIT_REPOSITORY "https://github.com/CIBC-Internal/cpm-google-test"
+  GIT_TAG "origin/master"
   USE_EXISTING_VER TRUE)
 
 # ++ MODULE: batch_testing
 CPM_AddModule("batch_testing"
-  GIT_REPOSITORY "https://github.com/iauns/cpm-gl-batch-testing"
-  GIT_TAG "1.1.4")
+  GIT_REPOSITORY "https://github.com/CIBC-Internal/cpm-gl-batch-testing"
+  GIT_TAG "origin/master")
 
 # ++ MODULE: file utils
 CPM_AddModule("file_util"
-  GIT_REPOSITORY "https://github.com/iauns/cpm-file-util"
-  GIT_TAG 1.0.0)
+  GIT_REPOSITORY "https://github.com/CIBC-Internal/cpm-file-util"
+  GIT_TAG "origin/master")
 
 # ++ MODULE: GLM
 CPM_AddModule("GLM"
-  GIT_REPOSITORY "https://github.com/iauns/cpm-glm"
-  GIT_TAG "1.0.2"
+  GIT_REPOSITORY "https://github.com/CIBC-Internal/cpm-glm"
+  GIT_TAG "origin/master"
   USE_EXISTING_VER TRUE
   )
 
 # ++ MODULE: GL State
 CPM_AddModule("gl_state"
-  GIT_REPOSITORY "https://github.com/iauns/cpm-gl-state.git"
-  GIT_TAG "1.0.1")
+  GIT_REPOSITORY "https://github.com/CIBC-Internal/cpm-gl-state.git"
+  GIT_TAG "origin/master")
 
 CPM_Finish()
 

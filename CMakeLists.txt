@@ -17,9 +17,9 @@ else()
     message(FATAL_ERROR "CPM requires Git.")
   endif()
   if (NOT EXISTS ${CPM_DIR}/CPM.cmake)
-    message(STATUS "Cloning repo (https://github.com/iauns/cpm)")
+    message(STATUS "Cloning repo (https://github.com/CIBC-Internal/cpm)")
     execute_process(
-      COMMAND "${GIT_EXECUTABLE}" clone https://github.com/iauns/cpm ${CPM_DIR}
+      COMMAND "${GIT_EXECUTABLE}" clone https://github.com/CIBC-Internal/cpm ${CPM_DIR}
       RESULT_VARIABLE error_code
       OUTPUT_QUIET ERROR_QUIET)
     if(error_code)
@@ -34,8 +34,8 @@ endif()
 #-----------------------------------------------------------------------
 # ++ MODULE: GL Platform
 CPM_AddModule("gl_platform"
-  GIT_REPOSITORY "https://github.com/iauns/cpm-gl-platform.git"
-  GIT_TAG "1.3.6"
+  GIT_REPOSITORY "https://github.com/CIBC-Internal/cpm-gl-platform.git"
+  GIT_TAG "origin/master"
   EXPORT_MODULE TRUE
   USE_EXISTING_VER TRUE)
 
