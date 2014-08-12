@@ -8,6 +8,7 @@
 #include <vector>
 #include <list>
 #include <tuple>
+#include <cstdint>
 #include <gl-platform/GLPlatform.hpp>
 
 namespace CPM_GL_SHADERS_NS {
