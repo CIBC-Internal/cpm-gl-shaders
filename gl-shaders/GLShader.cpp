@@ -530,7 +530,7 @@ GLenum getBaseTypeOfGLType(GLenum type)
 
     default:
       // Always default to a GL_FLOAT
-      std::cerr << "Warning - getBaseTypeOfGLType: unrecognized GL type" << std::endl;
+      std::cerr << "Warning - getBaseTypeOfGLType: unrecognized GL type: " << type << std::endl;
       return GL_FLOAT;
   }
 }
